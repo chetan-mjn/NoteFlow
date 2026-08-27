@@ -2,6 +2,8 @@ from sqlalchemy import String, Integer, Column, DateTime, func
 from app.database.database import Base
 from sqlalchemy.orm import relationship
 
+#this is a SQLAlchemy model
+
 class User(Base):
 
     __tablename__ = "users"

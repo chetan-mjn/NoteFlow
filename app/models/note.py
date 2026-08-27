@@ -2,6 +2,8 @@ from sqlalchemy import String, Column, Integer, ForeignKey, DateTime, func, Text
 from sqlalchemy.orm import relationship
 from app.database.database import Base
 
+#this is a SQLAlchemy model
+
 class Note(Base):
 
     __tablename__ = "notes"
