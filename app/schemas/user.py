@@ -47,3 +47,15 @@ class UserResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class UserLogin(BaseModel):
+    email: str = Field(
+        min_length=8,
+        max_length=122,
+        examples=["noteflowuser@example.com"]
+    )
+    password: str = Field(
+        min_length=8,
+        max_length=20,
+        examples=["myStrongpassword"]
+    )
