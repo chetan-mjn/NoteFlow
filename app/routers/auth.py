@@ -4,7 +4,9 @@ from sqlalchemy.orm import Session
 from app.schemas.user import UserCreate, UserResponse, UserLogin
 from app.database.database import get_db
 from app.models import User
-from app.core.security import hash_password, verify_password, create_access_token
+from app.core.security import hash_password, verify_password, create_access_token, verify_token
+
+from fastapi.security import OAuth2PasswordRequestForm
 
 authrouter = APIRouter(
     prefix="/auth",
@@ -43,12 +45,12 @@ def register(
 
 @authrouter.post("/login")
 def login(
-    user: UserLogin,
+    form: OAuth2PasswordRequestForm = Depends(OAuth2PasswordRequestForm),
     db: Session = Depends(get_db)
 ):
 
     existing_user = db.query(User).filter(
-        User.email == user.email
+        User.email == form.username
     ).first()
 
     if not existing_user:
@@ -57,7 +59,7 @@ def login(
             detail="Invalid email or password"
         )
 
-    if not verify_password(user.password, existing_user.password_hash):
+    if not verify_password(form.password, existing_user.password_hash):
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password"
@@ -69,3 +71,10 @@ def login(
         "access_token" : access_token,
         "token_type" : "bearer"
     }
+
+#test endpoint
+@authrouter.post("/verify_user")
+def verify_user(
+    user_id: int = Depends(verify_token)
+):
+    return user_id
