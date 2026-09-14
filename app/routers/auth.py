@@ -71,10 +71,3 @@ def login(
         "access_token" : access_token,
         "token_type" : "bearer"
     }
-
-#test endpoint
-@authrouter.post("/verify_user")
-def verify_user(
-    user_id: int = Depends(verify_token)
-):
-    return user_id
