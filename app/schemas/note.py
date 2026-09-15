@@ -46,3 +46,19 @@ class NoteResponse(BaseModel):
     updated_at: datetime   
 
     model_config = ConfigDict(from_attributes=True)
+
+class NoteUpdate(BaseModel):
+
+    title: str | None = Field(
+        min_length=3,
+        max_length=100,
+        description="Note Title",
+        examples=["My First Note"]
+    )
+
+    content: str | None = Field(
+        min_length=0,
+        max_length=10000000000000000,
+        description="Note Content",
+        examples=["This is my first note."]
+    )

@@ -1,4 +1,4 @@
-from app.schemas.note import NoteCreate, NoteResponse
+from app.schemas.note import NoteCreate, NoteResponse, NoteUpdate
 from app.models.user import User
 from app.models.note import Note
 from fastapi import Depends, HTTPException, APIRouter
@@ -48,3 +48,12 @@ def get_note(
         )
 
     return note
+
+@router.get("/", response_model=list[NoteResponse])
+def get_notes(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    notes = db.query(Note).filter(Note.owner_id == current_user.user_id).all()
+
+    return notes
