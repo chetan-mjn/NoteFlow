@@ -57,3 +57,35 @@ def get_notes(
     notes = db.query(Note).filter(Note.owner_id == current_user.user_id).all()
 
     return notes
+
+@router.patch("/{note_id}", response_model=NoteResponse)
+def update_note(
+    note_id: int,
+    note: NoteUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    updated_note = db.query(Note).filter(Note.note_id == note_id).first()
+
+    if not updated_note:
+        raise HTTPException(
+            status_code=404,
+            detail="Note not found"
+        )
+
+    if updated_note.owner_id != current_user.user_id:
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to access this note"
+        )
+
+    patched_data = note.model_dump(exclude_unset=True)
+
+    for field, value in patched_data.items():
+
+        setattr(updated_note, field, value)
+
+    db.commit()
+    db.refresh(updated_note)
+
+    return updated_note

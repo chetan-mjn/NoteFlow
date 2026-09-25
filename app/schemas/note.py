@@ -50,6 +50,7 @@ class NoteResponse(BaseModel):
 class NoteUpdate(BaseModel):
 
     title: str | None = Field(
+        default=None,
         min_length=3,
         max_length=100,
         description="Note Title",
@@ -57,6 +58,7 @@ class NoteUpdate(BaseModel):
     )
 
     content: str | None = Field(
+        default=None,
         min_length=0,
         max_length=10000000000000000,
         description="Note Content",
