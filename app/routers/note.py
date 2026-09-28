@@ -1,7 +1,7 @@
 from app.schemas.note import NoteCreate, NoteResponse, NoteUpdate
 from app.models.user import User
 from app.models.note import Note
-from fastapi import Depends, HTTPException, APIRouter
+from fastapi import Depends, HTTPException, APIRouter, Query
 from app.database.database import get_db
 from sqlalchemy.orm import Session
 from app.dependencies import get_current_user
@@ -51,10 +51,12 @@ def get_note(
 
 @router.get("/", response_model=list[NoteResponse])
 def get_notes(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    notes = db.query(Note).filter(Note.owner_id == current_user.user_id).all()
+    notes = db.query(Note).filter(Note.owner_id == current_user.user_id).offset(skip).limit(limit).all()
 
     return notes
 
