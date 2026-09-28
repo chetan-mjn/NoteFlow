@@ -89,3 +89,28 @@ def update_note(
     db.refresh(updated_note)
 
     return updated_note
+
+@router.delete("/{note_id}", status_code=204)
+def delete_note(
+    note_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    note = db.query(Note).filter(Note.note_id == note_id).first()
+
+    if not note:
+        raise HTTPException(
+            status_code=404,
+            detail="Note not found"
+        )
+
+    if note.owner_id != current_user.user_id:
+        raise HTTPException(
+            status_code=403,
+            detail="you do not have the permission to delete this note"
+        )
+
+    db.delete(note)
+    db.commit()
+
+    return
