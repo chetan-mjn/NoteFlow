@@ -5,10 +5,17 @@ from fastapi import Depends, HTTPException, APIRouter, Query
 from app.database.database import get_db
 from sqlalchemy.orm import Session
 from app.dependencies import get_current_user
+from sqlalchemy import or_
 
 router = APIRouter(
     prefix="/notes"
 )
+
+sort_columns = {
+    "created_at" : Note.created_at,
+    "updated_at" : Note.updated_at,
+    "title" : Note.title
+}
 
 @router.post("/", response_model=NoteResponse)
 def create_note(
@@ -53,10 +60,42 @@ def get_note(
 def get_notes(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=10, ge=1, le=100),
+    search: str | None = None,
+    sort_by: str = "created_at",
+    order: str = "desc",
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    notes = db.query(Note).filter(Note.owner_id == current_user.user_id).offset(skip).limit(limit).all()
+    query = db.query(Note).filter(Note.owner_id == current_user.user_id)
+
+    if search:
+        query = query.filter(
+            or_(
+                Note.title.ilike(f"%{search}%"),
+                Note.content.ilike(f"%{search}%")
+            )
+        )
+
+    sort_column = sort_columns.get(sort_by)
+
+    if sort_column is None:
+        raise HTTPException(
+            status_code=422,
+            detail="Please choose a valid sort field"
+        )
+
+    if order not in ["asc", "desc"]:
+        raise HTTPException(
+            status_code=422,
+            detail="Please a valid sort order: asc or desc"
+        )
+
+    if order == "asc":
+        query = query.order_by(sort_column.asc())
+    elif order == "desc":
+        query = query.order_by(sort_column.desc())
+
+    notes = query.offset(skip).limit(limit).all()
 
     return notes
 
